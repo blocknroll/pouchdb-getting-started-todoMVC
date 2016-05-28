@@ -40,10 +40,18 @@
 
   // Show the current list of todos by reading them from the database
   function showTodos() {
-    db.allDocs({include_docs: true, descending: true}, function (err, doc) {
+    db.allDocs({include_docs: true, descending: true}).then(function (doc) {
       redrawTodosUI(doc.rows);
+    }).catch(function (err) {
+      console.log(err);
     });
   }
+
+  // function showTodos() {
+  //   db.allDocs({include_docs: true, descending: true}, function (err, doc) {
+  //     redrawTodosUI(doc.rows);
+  //   });
+  // }
 
   function checkboxChanged(todo, event) {
     todo.completed = event.target.checked;
