@@ -8,32 +8,50 @@
 
   // EDITING STARTS HERE (you dont need to edit anything above this line)
 
-  var db = new Pouch('todos');
-  var remoteCouch = false;
+  var db = new PouchDB('todomvc');
+  var remoteCouch = 'http://localhost:5984/todomvc-remote';
 
-  db.info(function(err, info) {
-    db.changes({since: info.update_seq, onChange: showTodos, continuous: true});
-  });
+  db.changes({
+    since: 'now',
+    live: true
+  }).on('change', showTodos);
+
+  // db.info(function(err, info) {
+  //   db.changes({since: info.update_seq, onChange: showTodos, continuous: true});
+  // });
+
 
   // We have to create a new todo document and enter it in the database
   function addTodo(text) {
     var todo = {
+      _id: new Date().toISOString(),
       title: text,
       completed: false
     };
-    db.post(todo, function(err, result) {
-      if (!err) {
-        console.log('Successfully posted a todo!');
-      }
+    db.put(todo).then(function (result) {
+      console.log("it worked!");
+      console.log(result);
+    }).catch(function (error) {
+      console.log("something didn't work");
+      console.log(error);
     });
   }
 
+
   // Show the current list of todos by reading them from the database
   function showTodos() {
-    db.allDocs({include_docs: true}, function(err, doc) {
+    db.allDocs({include_docs: true, descending: true}).then(function (doc) {
       redrawTodosUI(doc.rows);
+    }).catch(function (err) {
+      console.log(err);
     });
   }
+
+  // function showTodos() {
+  //   db.allDocs({include_docs: true, descending: true}, function (err, doc) {
+  //     redrawTodosUI(doc.rows);
+  //   });
+  // }
 
   function checkboxChanged(todo, event) {
     todo.completed = event.target.checked;
@@ -60,9 +78,16 @@
   // Initialise a sync with the remote server
   function sync() {
     syncDom.setAttribute('data-sync-state', 'syncing');
-    var pushRep = db.replicate.to(remoteCouch, {continuous: true, complete: syncError});
-    var pullRep = db.replicate.from(remoteCouch, {continuous: true, complete: syncError});
+    var opts = {live: true};
+    db.sync(remoteCouch, opts, syncError);
   }
+
+  // function sync() {
+  //   syncDom.setAttribute('data-sync-state', 'syncing');
+  //   var pushRep = db.replicate.to(remoteCouch, {continuous: true, complete: syncError});
+  //   var pullRep = db.replicate.from(remoteCouch, {continuous: true, complete: syncError});
+  // }
+
 
   // EDITING STARTS HERE (you dont need to edit anything below this line)
 
