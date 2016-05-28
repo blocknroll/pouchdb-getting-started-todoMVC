@@ -22,10 +22,12 @@
       title: text,
       completed: false
     };
-    db.put(todo, function callback(err, result) {
-      if (!err) {
-        console.log('Successfully posted a todo!');
-      }
+    db.put(todo).then(function (result) {
+      console.log("it worked!");
+      console.log(result);
+    }).catch(function (err) {
+      console.log("something didn't work");
+      console.log(err);
     });
   }
 
