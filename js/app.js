@@ -25,9 +25,9 @@
     db.put(todo).then(function (result) {
       console.log("it worked!");
       console.log(result);
-    }).catch(function (err) {
+    }).catch(function (error) {
       console.log("something didn't work");
-      console.log(err);
+      console.log(error);
     });
   }
 
